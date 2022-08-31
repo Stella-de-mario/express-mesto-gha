@@ -8,15 +8,11 @@ const {
 
 module.exports.getCards = (req, res) => {
   Card.find({})
-    .populate(['owner', 'likes'])
-    .then((cards) => {
-      res.status(OK_REQUEST).send({ data: cards });
-    })
-    .catch(() => {
-      res
-        .status(INTERNAL_SERVER_ERROR)
-        .send({ message: 'Произошла ошибка на сервере' });
-    });
+    .populate('owner')
+    .then((cards) => res.status(OK_REQUEST).send({ cards }))
+    .catch(() => res
+      .status(INTERNAL_SERVER_ERROR)
+      .send({ message: 'Произошла ошибка на сервере' }));
 };
 
 module.exports.createCard = (req, res) => {
@@ -44,7 +40,7 @@ module.exports.deleteCard = (req, res) => {
           .status(NOT_FOUND_ERROR)
           .send({ message: 'Карточка с указанным id не найдена' });
       }
-      return res.status(OK_REQUEST).send({ data: card });
+      return res.status(OK_REQUEST).send({ card });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
@@ -92,7 +88,7 @@ module.exports.dislikeCard = (req, res) => {
       if (!card) {
         return res.status(NOT_FOUND_ERROR).send({ message: 'Карточка не найдена' });
       }
-      return res.status(OK_REQUEST).send({ data: card });
+      return res.status(OK_REQUEST).send({ card });
     })
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {

@@ -9,8 +9,6 @@ const app = express();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use('/users', require('./routes/users'));
-app.use('/cards', require('./routes/cards'));
 
 app.use('/*', (req, res, next) => {
   req.user = {
@@ -18,12 +16,14 @@ app.use('/*', (req, res, next) => {
   };
   next();
 });
-app.use((req, res) => {
-  res.status(NOT_FOUND_ERROR).send({ message: 'Запрашиваемая страница не найдена' });
-});
+
+app.use('/cards', require('./routes/cards'));
+app.use('/users', require('./routes/users'));
+
+app.use('/*', (req, res) => res.status(NOT_FOUND_ERROR).send({ message: 'Запрашиваемая страница не найдена' }));
 
 async function main() {
-  mongoose.connect('mongodb://localhost:27017/mestodb', {
+  await mongoose.connect('mongodb://localhost:27017/mestodb', {
     useNewUrlParser: true,
     useUnifiedTopology: false,
   });
@@ -31,4 +31,5 @@ async function main() {
     console.log(`App listening on port ${PORT}`);
   });
 }
+
 main();
