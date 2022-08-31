@@ -8,9 +8,7 @@ const {
 
 module.exports.getUsers = (req, res) => {
   User.find({})
-    .then((users) => {
-      res.send(users);
-    })
+    .then((users) => res.send(users))
     .catch(() => res
       .status(INTERNAL_SERVER_ERROR)
       .send({ message: 'Произошла ошибка на сервере' }));
@@ -78,11 +76,7 @@ module.exports.updateUser = (req, res) => {
       return res.send(user);
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        return res
-          .status(BAD_REQUEST_ERROR)
-          .send({ message: 'Переданы некорректные данные' });
-      } if (err.name === 'CastError') {
+      if (err.name === 'CastError' || err.name === 'ValidationError') {
         return res
           .status(BAD_REQUEST_ERROR)
           .send({ message: 'Переданы некорректные данные' });
@@ -111,11 +105,7 @@ module.exports.updateAvatar = (req, res) => {
       return res.status(OK_REQUEST).send(user);
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        return res
-          .status(BAD_REQUEST_ERROR)
-          .send({ message: 'Переданы некорректные данные' });
-      } if (err.name === 'CastError') {
+      if (err.name === 'CastError' || err.name === 'ValidationError') {
         return res
           .status(BAD_REQUEST_ERROR)
           .send({ message: 'Переданы некорректные данные' });
