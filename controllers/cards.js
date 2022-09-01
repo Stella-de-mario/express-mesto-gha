@@ -8,8 +8,7 @@ const {
 
 module.exports.getCards = (req, res) => {
   Card.find({})
-    .populate('owner')
-    .then((cards) => res.status(OK_REQUEST).send({ cards }))
+    .then((cards) => res.send({ cards }))
     .catch(() => res
       .status(INTERNAL_SERVER_ERROR)
       .send({ message: 'Произошла ошибка на сервере' }));
@@ -67,7 +66,7 @@ module.exports.likeCard = (req, res) => {
       return res.status(OK_REQUEST).send({ card });
     })
     .catch((err) => {
-      if (err.name === 'CastError' || err.name === 'ValidationError') {
+      if (err.name === 'CastError') {
         return res
           .status(BAD_REQUEST_ERROR)
           .send({ message: 'Переданы некорректные данные' });
@@ -91,7 +90,7 @@ module.exports.dislikeCard = (req, res) => {
       return res.status(OK_REQUEST).send({ card });
     })
     .catch((err) => {
-      if (err.name === 'CastError' || err.name === 'ValidationError') {
+      if (err.name === 'CastError') {
         return res
           .status(BAD_REQUEST_ERROR)
           .send({ message: 'Переданы некорректные данные' });
