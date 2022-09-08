@@ -38,7 +38,13 @@ module.exports.deleteCard = (req, res, next) => {
         }
         return next(err);
       });
-  });
+  })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        return next(new BadRequestError('Переданы некорректные данные'));
+      }
+      return next(err);
+    });
 };
 
 module.exports.likeCard = (req, res, next) => {
@@ -49,9 +55,7 @@ module.exports.likeCard = (req, res, next) => {
   )
     .then((card) => {
       if (!card) {
-        return res
-          .status(NotFoundError)
-          .send({ message: 'Карточка не найдена' });
+        throw new NotFoundError('Карточка не найдена');
       }
       return res.send({ data: card });
     })
@@ -71,9 +75,7 @@ module.exports.dislikeCard = (req, res, next) => {
   )
     .then((card) => {
       if (!card) {
-        return res
-          .status(NotFoundError)
-          .send({ message: 'Карточка не найдена' });
+        throw new NotFoundError('Карточка не найдена');
       }
       return res.send({ data: card });
     })
