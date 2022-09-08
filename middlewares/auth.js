@@ -7,8 +7,8 @@ module.exports.auth = (req, res, next) => {
   try {
     payload = jwt.verify(token, 'SECRET');
   } catch (err) {
-    res.status(UnauthorizedError).send({ message: 'Пожалуйста, авторизуйтесь' });
+    return next(new UnauthorizedError('Пожалуйста, авторизуйтесь'));
   }
   req.user = payload;
-  next();
+  return next();
 };

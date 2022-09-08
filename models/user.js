@@ -28,7 +28,7 @@ const userSchema = new mongoose.Schema({
         return regexUrl.test(url);
       },
       message: 'Ссылка некорректна, введите правильный адрес ',
-    }
+    },
   },
   email: {
     type: String,
@@ -39,33 +39,36 @@ const userSchema = new mongoose.Schema({
       },
       message: 'Введите корректный адрес электронной почты',
     },
+  },
   password: {
     type: String,
     required: [true, 'Поле "password" должно быть заполнено'],
     select: false,
   },
-}, { versionKey: false });
+});
 
+// eslint-disable-next-line func-names
 userSchema.methods.toJSON = function () {
   const user = this.toObject();
   delete user.password;
   return user;
 };
 
+// eslint-disable-next-line func-names
 userSchema.statics.findUserByCredentials = function (email, password) {
   return this.findOne({ email })
     .select('+password')
-      .then((user) => {
-        if(!user) {
-          throw new UnauthorizedError('Неправильные почта или пароль');
-        }
-        return bcrypt.compare(password, user.password)
-          .then((matched) => {
-           if (!matched) {
-             throw new UnauthorizedError('Неправильные почта или пароль');
-            }
-        return user;
-      });
+    .then((user) => {
+      if (!user) {
+        throw new UnauthorizedError('Неправильные почта или пароль');
+      }
+      return bcrypt.compare(password, user.password)
+        .then((matched) => {
+          if (!matched) {
+            throw new UnauthorizedError('Неправильные почта или пароль');
+          }
+          return user;
+        });
     });
 };
 

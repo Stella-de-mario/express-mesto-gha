@@ -41,7 +41,9 @@ module.exports.getUsers = (req, res, next) => {
 };
 
 module.exports.createUser = (req, res, next) => {
-  const { name, about, avatar, email, password } = req.body;
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
   bcrypt.hash(password, 10)
     .then((hash) => User.create({
       name,
@@ -88,7 +90,7 @@ module.exports.getUserId = (req, res, next) => {
     });
 };
 
-module.exports.updateUser = (req, res, next => {
+module.exports.updateUser = (req, res, next) => {
   const { name, about } = req.body;
   const id = req.user._id;
   User.findByIdAndUpdate(
