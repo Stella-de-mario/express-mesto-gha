@@ -5,7 +5,7 @@ const cookieParser = require('cookie-parser');
 const { errors } = require('celebrate');
 const { login, createUser } = require('./controllers/users');
 const { validateLogin, validateCreateUser } = require('./utils/constants');
-const { auth } = require('./middlewares/auth');
+const auth = require('./middlewares/auth');
 const NotFoundError = require('./utils/errors/NotFoundError');
 
 const { PORT = 3000 } = process.env;
@@ -19,12 +19,16 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(auth);
+
+app.post('/signup', validateCreateUser, createUser);
 app.post('/signin', validateLogin, login);
-app.post('signup', validateCreateUser, createUser);
+
+app.use(auth);
+
 app.use('/cards', require('./routes/cards'));
 app.use('/users', require('./routes/users'));
 
+app.use(errors());
 app.use('/*', (req, res) => res.status(NotFoundError).send({ message: 'Запрашиваемая страница не найдена' }));
 
 app.use((err, req, res, next) => {
@@ -32,7 +36,6 @@ app.use((err, req, res, next) => {
   res.status(statusCode).send({ message: statusCode === 500 ? 'Произошла ошибка на сервере' : message });
   next();
 });
-app.use(errors());
 
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
