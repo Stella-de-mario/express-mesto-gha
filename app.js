@@ -19,10 +19,10 @@ app.use(cookieParser());
 app.post('/signin', validateLogin, login);
 app.post('signup', validateCreateUser, createUser);
 
-app.use(auth);
-
 app.use('/cards', require('./routes/cards'));
 app.use('/users', require('./routes/users'));
+
+app.use(auth);
 
 app.use('/*', (req, res) => res.status(NotFoundError).send({ message: 'Запрашиваемая страница не найдена' }));
 

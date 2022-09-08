@@ -2,10 +2,11 @@ const Card = require('../models/card');
 const BadRequestError = require('../utils/errors/BadRequestError');
 const NotFoundError = require('../utils/errors/NotFoundError');
 const ForbiddenError = require('../utils/errors/ForbiddenError');
+const UnauthorizedError = require('../utils/errors/UnauthorizedError');
 
 module.exports.getCards = (req, res, next) => {
   Card.find({})
-    .then((cards) => res.send({ cards }))
+    .then((cards) => res.send({ data: cards }))
     .catch(next);
 };
 
@@ -13,7 +14,7 @@ module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
   const owner = { _id: req.user._id };
   Card.create({ name, link, owner })
-    .then((card) => res.send({ card }))
+    .then((card) => res.send({ data: card }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         return next(new BadRequestError('Переданы некорректные данные'));
@@ -27,12 +28,12 @@ module.exports.deleteCard = (req, res, next) => {
     .then((card) => {
       if (!card) {
         return res
-          .status(NotFoundError)
+          .status(UnauthorizedError)
           .send({ message: 'Карточка с указанным id не найдена' });
       }
       if (card.owner.toString() !== req.user._id) {
         return res
-          .status(ForbiddenError)
+          .status(UnauthorizedError)
           .send({ message: 'Нет прав для удаления карточки' });
       }
       return res.send({ card });
@@ -53,7 +54,7 @@ module.exports.likeCard = (req, res, next) => {
   )
     .then((card) => {
       if (!card) {
-        return res.status(NotFoundError).send({ message: 'Карточка не найдена' });
+        return res.status(UnauthorizedError).send({ message: 'Карточка не найдена' });
       }
       return res.send({ card });
     })
