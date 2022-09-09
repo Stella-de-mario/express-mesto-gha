@@ -24,22 +24,20 @@ module.exports.createCard = (req, res, next) => {
 };
 
 module.exports.deleteCard = (req, res, next) => {
-  Card.findById(req.params.cardId).then((card) => {
-    if (!card) {
-      throw new NotFoundError('Карточка с указанным id не найдена');
-    }
-    if (card.owner.toString() !== req.user._id) {
-      throw new ForbiddenError('Нет прав для удаления карточки');
-    }
-    Card.findByIdAndDelete(req.params.cardId)
-      .then((deleteCard) => res.send({ data: deleteCard }))
-      .catch((err) => {
-        if (err.name === 'CastError') {
-          return next(new BadRequestError('Переданы некорректные данные'));
+  Card.findById(req.params.cardId)
+    // eslint-disable-next-line consistent-return
+    .then((card) => {
+      if (card) {
+        if (card.owner.toString() === req.user._id.toString()) {
+          Card.findByIdAndRemove(req.params.cardId)
+            .then((deleteCard) => res.send(deleteCard));
+        } else {
+          return next(new ForbiddenError('Нет прав для удаления карточки'));
         }
-        return next(new InternalServerError('Произошла ошибка на сервере'));
-      });
-  })
+      } else {
+        return next(new NotFoundError('Карточка с указанным id не найдена'));
+      }
+    })
     .catch((err) => {
       if (err.name === 'CastError') {
         return next(new BadRequestError('Переданы некорректные данные'));
@@ -56,7 +54,7 @@ module.exports.likeCard = (req, res, next) => {
   )
     .then((card) => {
       if (!card) {
-        return next(NotFoundError('Карточка не найдена'));
+        return next(new NotFoundError('Карточка не найдена'));
       }
       return res.send(card);
     })
@@ -81,7 +79,7 @@ module.exports.dislikeCard = (req, res, next) => {
       return res.send(card);
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'CastError' || err.name === 'ValidationError') {
         return next(new BadRequestError('Переданы некорректные данные'));
       }
       return next(new InternalServerError('Произошла ошибка на сервере'));
