@@ -48,41 +48,40 @@ module.exports.createUser = (req, res, next) => {
   } = req.body;
   bcrypt
     .hash(password, 10)
-    .then((hash) => User.create({
-      name,
-      about,
-      avatar,
-      email,
-      password: hash,
-    }))
-    .then((user) => res.send(user))
-  // eslint-disable-next-line consistent-return
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        next(new BadRequestError('Переданы некорректные данные'));
-      }
-      if (err.code === 11000) {
-        next(new ConflictingRequestError('Пользователь с таким email уже зарегистрирован'));
-      }
-    })
-  // eslint-disable-next-line no-undef
-    .catch(next);
+    .then((hashedPassword) => {
+      User.create({
+        name,
+        about,
+        avatar,
+        email,
+        password: hashedPassword,
+      })
+        .then((user) => res.send(user))
+        .catch((err) => {
+          if (err.name === 'ValidationError') {
+            return next(new BadRequestError('Переданы некорректные данные'));
+          }
+          if (err.code === 11000) {
+            return next(new ConflictingRequestError('Пользователь с таким email уже зарегистрирован'));
+          }
+          return next(err);
+        });
+    });
 };
 
 module.exports.getUserId = (req, res, next) => {
   User.findById(req.params.userId)
     .then((user) => {
       if (!user) {
-        next(new NotFoundError('Пользователь с указанным id не найден'));
+        return next(new NotFoundError('Пользователь с указанным id не найден'));
       }
-      res.send(user);
+      return res.send(user);
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(new BadRequestError('Переданы некорректные данные'));
-      } else {
-        next(err);
+        return next(new BadRequestError('Переданы некорректные данные'));
       }
+      return next(err);
     });
 };
 
@@ -127,14 +126,14 @@ module.exports.updateAvatar = (req, res, next) => {
   )
     .then((user) => {
       if (!user) {
-        next(new NotFoundError('Пользователь не найден'));
+        return next(new NotFoundError('Пользователь не найден'));
       }
-      res.send(user);
+      return res.send(user);
     })
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
-        next(new BadRequestError('Переданы некорректные данные'));
+        return next(new BadRequestError('Переданы некорректные данные'));
       }
-      next(err);
+      return next(err);
     });
 };
