@@ -9,17 +9,19 @@ module.exports.getCards = (req, res, next) => {
     .catch(next);
 };
 
-module.exports.createCard = (req, res, next) => {
+module.exports.createCard = async (req, res, next) => {
   const { name, link } = req.body;
   const owner = { _id: req.user._id };
-  Card.create({ name, link, owner })
-    .then((card) => res.send({ data: card }))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        return next(new BadRequestError('Переданы некорректные данные'));
-      }
-      return next(err);
-    });
+  try {
+    const card = await Card.create({ name, link, owner });
+    res.send(card);
+  } catch (err) {
+    if (err.name === 'ValidationError') {
+      next(new BadRequestError('Переданы некорректные данные'));
+    } else {
+      next(err);
+    }
+  }
 };
 
 module.exports.deleteCard = (req, res, next) => {

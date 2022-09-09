@@ -29,9 +29,7 @@ module.exports.login = (req, res, next) => {
           });
           res.send({ data: user.toJSON() });
         } else {
-          res
-            .status(UnauthorizedError)
-            .send({ message: 'Неправильные почта или пароль' });
+          next(new UnauthorizedError('Неправильные почта или пароль'));
         }
       });
     })
@@ -40,7 +38,7 @@ module.exports.login = (req, res, next) => {
 
 module.exports.getUsers = (req, res, next) => {
   User.find({})
-    .then((users) => res.send({ data: users }))
+    .then((users) => res.send(users))
     .catch(next);
 };
 
@@ -58,20 +56,16 @@ module.exports.createUser = (req, res, next) => {
       password: hash,
     }))
     .then((user) => res.send(user))
-    // eslint-disable-next-line consistent-return
+  // eslint-disable-next-line consistent-return
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res
-          .status(BadRequestError)
-          .send({ message: 'Переданы некорректные данные' });
+        next(new BadRequestError('Переданы некорректные данные'));
       }
       if (err.code === 11000) {
-        return res
-          .status(ConflictingRequestError)
-          .send({ message: 'Пользователь с таким email уже зарегистрирован' });
+        next(new ConflictingRequestError('Пользователь с таким email уже зарегистрирован'));
       }
     })
-    // eslint-disable-next-line no-undef
+  // eslint-disable-next-line no-undef
     .catch(next);
 };
 
@@ -79,17 +73,16 @@ module.exports.getUserId = (req, res, next) => {
   User.findById(req.params.userId)
     .then((user) => {
       if (!user) {
-        return res.status(NotFoundError).send({
-          message: 'Пользователь с указанным id не найден',
-        });
+        next(new NotFoundError('Пользователь с указанным id не найден'));
       }
-      return res.send({ data: user });
+      res.send(user);
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        return next(new BadRequestError('Переданы некорректные данные'));
+        next(new BadRequestError('Переданы некорректные данные'));
+      } else {
+        next(err);
       }
-      return next(err);
     });
 };
 
@@ -104,19 +97,20 @@ module.exports.updateUser = (req, res, next) => {
       runValidators: true,
     },
   )
+    .orFail(() => {
+      throw new NotFoundError('Передан некорректный id');
+    })
     .then((user) => {
       if (!user) {
-        return res.status(NotFoundError).send({
-          message: 'Пользователь с указанным id не существует',
-        });
+        next(new NotFoundError('Пользователь с указанным id не существует'));
       }
-      return res.send({ data: user });
+      res.send(user);
     })
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
-        return next(new BadRequestError('Переданы некорректные данные'));
+        next(new BadRequestError('Переданы некорректные данные'));
       }
-      return next(err);
+      next(err);
     });
 };
 
@@ -133,16 +127,14 @@ module.exports.updateAvatar = (req, res, next) => {
   )
     .then((user) => {
       if (!user) {
-        return res
-          .status(NotFoundError)
-          .send({ message: 'Пользователь не найден' });
+        next(new NotFoundError('Пользователь не найден'));
       }
-      return res.send({ data: user });
+      res.send(user);
     })
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
-        return next(new BadRequestError('Переданы некорректные данные'));
+        next(new BadRequestError('Переданы некорректные данные'));
       }
-      return next(err);
+      next(err);
     });
 };
