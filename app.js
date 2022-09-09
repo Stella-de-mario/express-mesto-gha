@@ -7,6 +7,7 @@ const { login, createUser } = require('./controllers/users');
 const { validateLogin, validateCreateUser } = require('./utils/constants');
 const auth = require('./middlewares/auth');
 const NotFoundError = require('./utils/errors/NotFoundError');
+const errorHandler = require('./middlewares/errorHandler');
 
 const { PORT = 3000 } = process.env;
 const app = express();
@@ -32,11 +33,7 @@ app.use('/users', require('./routes/users'));
 app.use('/*', (req, res) => res.status(NotFoundError).send({ message: 'Запрашиваемая страница не найдена' }));
 
 app.use(errors());
-app.use((err, req, res, next) => {
-  const { statusCode = 500, message } = err;
-  res.status(statusCode).send({ message: statusCode === 500 ? 'Произошла ошибка на сервере' : message });
-  next();
-});
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);

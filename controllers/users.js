@@ -6,14 +6,18 @@ const BadRequestError = require('../utils/errors/BadRequestError');
 const ConflictingRequestError = require('../utils/errors/ConflictingRequestError');
 const NotFoundError = require('../utils/errors/NotFoundError');
 const UnauthorizedError = require('../utils/errors/UnauthorizedError');
+const InternalServerError = require('../utils/errors/InternalServerError');
 
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
-
   User.findOne({ email })
     .select('+password')
-    .orFail(() => new Error('Пользователь не найден'))
+    // eslint-disable-next-line consistent-return
     .then((user) => {
+      if (!user) {
+        return next(new UnauthorizedError('Неправильные почта или пароль'));
+      }
+      // eslint-disable-next-line consistent-return
       bcrypt.compare(password, user.password).then((isUserValid) => {
         if (isUserValid) {
           const token = jwt.sign(
@@ -29,7 +33,7 @@ module.exports.login = (req, res, next) => {
           });
           res.send({ data: user.toJSON() });
         } else {
-          next(new UnauthorizedError('Неправильные почта или пароль'));
+          return next(new UnauthorizedError('Неправильные почта или пароль'));
         }
       });
     })
@@ -64,7 +68,7 @@ module.exports.createUser = (req, res, next) => {
           if (err.code === 11000) {
             return next(new ConflictingRequestError('Пользователь с таким email уже зарегистрирован'));
           }
-          return next(err);
+          return next(new InternalServerError('Произошла ошибка на сервере'));
         });
     });
 };
@@ -81,7 +85,7 @@ module.exports.getUserId = (req, res, next) => {
       if (err.name === 'CastError') {
         return next(new BadRequestError('Переданы некорректные данные'));
       }
-      return next(err);
+      return next(new InternalServerError('Произошла ошибка на сервере'));
     });
 };
 
@@ -134,6 +138,6 @@ module.exports.updateAvatar = (req, res, next) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
         return next(new BadRequestError('Переданы некорректные данные'));
       }
-      return next(err);
+      return next(new InternalServerError('Произошла ошибка на сервере'));
     });
 };
