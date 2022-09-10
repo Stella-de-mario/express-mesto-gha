@@ -22,15 +22,17 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.json());
 
-app.post('/signup', validateCreateUser, createUser);
 app.post('/signin', validateLogin, login);
+app.post('/signup', validateCreateUser, createUser);
 
 app.use(auth);
 
 app.use('/cards', require('./routes/cards'));
 app.use('/users', require('./routes/users'));
 
-app.use('/*', (req, res) => res.status(NotFoundError).send({ message: 'Запрашиваемая страница не найдена' }));
+app.use((req, res, next) => {
+  next(new NotFoundError('Запрашиваемая страница не найдена'));
+});
 
 app.use(errors());
 app.use(errorHandler);
