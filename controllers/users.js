@@ -126,16 +126,14 @@ module.exports.updateUser = (req, res, next) => {
       throw new NotFoundError('Передан некорректный id');
     })
     .then((user) => {
-      if (!user) {
-        next(new NotFoundError('Пользователь с указанным id не существует'));
-      }
       res.send(user);
     })
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
         next(new BadRequestError('Переданы некорректные данные'));
+      } else {
+        next(err);
       }
-      next(err);
     });
 };
 
@@ -150,16 +148,17 @@ module.exports.updateAvatar = (req, res, next) => {
       runValidators: true,
     },
   )
+    .orFail(() => {
+      throw new NotFoundError('Передан некорректный id');
+    })
     .then((user) => {
-      if (!user) {
-        return next(new NotFoundError('Пользователь не найден'));
-      }
-      return res.send(user);
+      res.send(user);
     })
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
-        return next(new BadRequestError('Переданы некорректные данные'));
+        next(new BadRequestError('Переданы некорректные данные'));
+      } else {
+        next(err);
       }
-      return next(new InternalServerError('Произошла ошибка на сервере'));
     });
 };

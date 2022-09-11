@@ -1,6 +1,7 @@
 const { celebrate, Joi } = require('celebrate');
 
-const regexUrl = /^https*:\/\/(www.)*[a-zа-я0-9.\-._~:/?#[\]@!$&'()*+,;=]{2,}(#*$)/i;
+const regexUrl = /^https?:\/\/(www.)?[a-zа-я0-9.\-._~:/?#[\]@!$&'()*+,;=]{2,}#?$/;
+const regexId = /^[a-z0-9]{24}$/i;
 
 const validateLogin = celebrate({
   body: Joi.object().keys({
@@ -21,7 +22,7 @@ const validateCreateUser = celebrate({
 
 const validateGetUserId = celebrate({
   params: Joi.object().keys({
-    userId: Joi.string().required().length(24),
+    userId: Joi.string().required().pattern(regexId),
   }),
 });
 
@@ -40,7 +41,7 @@ const validateUpdateAvatar = celebrate({
 
 const validateGetCardId = celebrate({
   params: Joi.object().keys({
-    cardId: Joi.string().alphanum().length(24),
+    cardId: Joi.string().required().pattern(regexId),
   }),
 });
 

@@ -79,7 +79,7 @@ module.exports.dislikeCard = (req, res, next) => {
       return res.send({ card });
     })
     .catch((err) => {
-      if (err.name === 'CastError' || err.name === 'ValidationError') {
+      if (err.name === 'CastError') {
         return next(new BadRequestError('Переданы некорректные данные'));
       }
       return next(new InternalServerError('Произошла ошибка на сервере'));
