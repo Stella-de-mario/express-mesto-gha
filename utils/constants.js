@@ -1,6 +1,6 @@
 const { celebrate, Joi } = require('celebrate');
-
-const regexUrl = /^https?:\/\/(www.)?[a-zа-я0-9.-._~:/?#[\]@!$&'()*+,;=]{2,}#?$/;
+// eslint-disable-next-line no-useless-escape
+const regexUrl = /^https?:\/\/(www\.)?[a-zA-z\d\-]+\.[\w\d\-\._~:\/?#\[\]@!\$&'\(\)*\+,;=]{2,}#?$/;
 const regexId = /^[a-z0-9]{24}$/i;
 
 const validateLogin = celebrate({
@@ -22,7 +22,7 @@ const validateCreateUser = celebrate({
 
 const validateGetUserId = celebrate({
   params: Joi.object().keys({
-    userId: Joi.string().required().pattern(regexId),
+    userId: Joi.string().required().hex().pattern(regexId),
   }),
 });
 
@@ -41,7 +41,7 @@ const validateUpdateAvatar = celebrate({
 
 const validateGetCardId = celebrate({
   params: Joi.object().keys({
-    cardId: Joi.string().required().pattern(regexId),
+    cardId: Joi.string().required().hex().pattern(regexId),
   }),
 });
 
